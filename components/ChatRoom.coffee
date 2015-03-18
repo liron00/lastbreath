@@ -53,6 +53,10 @@ J.dc 'ChatRoom',
             default: -> J.List()
 
     reactives:
+        battery:
+            val: -> J.getBattery()
+            onChange: true
+
         chats:
             val: ->
                 $$.Chat.fetch(
@@ -67,6 +71,7 @@ J.dc 'ChatRoom',
                             kind: 'Chat'
                             username: chat.username()
                             message: chat.message()
+                            battery: chat.battery()
                         @seenChatIdSet().setOrAdd chat._id, true
 
         _messagesScroller:
@@ -86,7 +91,7 @@ J.dc 'ChatRoom',
         message = @refs.inpMessage.getDOMNode().value
         return if not message
 
-        Meteor.call 'chat', @prop.username(), message
+        Meteor.call 'chat', @prop.username(), message, @battery()
         @refs.inpMessage.getDOMNode().value = ''
 
 
@@ -164,16 +169,36 @@ J.dc 'ChatRoom',
 
                 @messages().map (message) =>
                     if message.kind() is 'Chat'
+                        batteryLevel = message.battery().get('level')
+
                         $$ ('TableRow'),
                             style:
+                                background:
+                                    if batteryLevel?
+                                        J.util.fractionToColor batteryLevel
                                 marginBottom: 8
 
                             $$ ('td'),
                                 style:
                                     verticalAlign: 'top'
                                     fontWeight: 'bold'
-                                    paddingRight: 12
+                                    paddingRight: 4
                                 (message.username())
+
+                            $$ ('td'),
+                                style:
+                                    verticalAlign: 'top'
+                                    paddingRight: 12
+                                    paddingTop: 2
+                                    fontSize: 14
+                                    fontWeight: 'bold'
+                                    fontFamily: 'courier new'
+                                    color: if not batteryLevel? then '#999'
+
+                                if batteryLevel?
+                                    "#{parseInt batteryLevel * 100}%"
+                                else
+                                    ("N/A")
 
                             $$ ('td'),
                                 style:

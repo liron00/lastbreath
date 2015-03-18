@@ -8,3 +8,5 @@ J.dm 'Chat', 'chats',
             type: $$.string
         timestamp:
             type: $$.string
+        battery:
+            type: $$.obj
